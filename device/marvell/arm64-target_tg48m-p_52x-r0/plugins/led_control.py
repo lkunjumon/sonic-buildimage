@@ -43,10 +43,14 @@ class LedControl(LedControlBase):
         fan_amber=0x0
         psu_green=0x0
         psu_amber=0x0
-        Fan_green_led_gpio_path = "/sys/class/gpio/fanLedGreen"
-        Fan_amber_led_gpio_path = "/sys/class/gpio/fanLedAmber"
-        Psu_green_led_gpio_path = "/sys/class/gpio/psuLedGreen"
-        Psu_amber_led_gpio_path = "/sys/class/gpio/psuLedAmber"
+        sys_green=0x0
+        sys_amber=0x0
+        Fan_green_led_gpio_path = "/sys/class/leds/fanLedGreen"
+        Fan_amber_led_gpio_path = "/sys/class/leds/fanLedAmber"
+        Psu_green_led_gpio_path = "/sys/class/leds/psuLedGreen"
+        Psu_amber_led_gpio_path = "/sys/class/leds/psuLedAmber"
+        System_green_led_gpio_path = "/sys/class/leds/sysLedGreen"
+        System_amber_led_gpio_path = "/sys/class/leds/sysLedAmber"
 
         # Write sys led
         if smbus_present == 0:
@@ -64,7 +68,7 @@ class LedControl(LedControlBase):
                 if fan_amber == 0x1:
                     value=0
                     try:
-                        gpio_file = open(Fan_amber_led_gpio_path +"/value", 'w')
+                        gpio_file = open(Fan_amber_led_gpio_path +"/brightness", 'w')
                         gpio_file.write(str(value))
                         gpio_file.close()
                         fan_amber = 0x0
@@ -73,7 +77,7 @@ class LedControl(LedControlBase):
 
                 value=1
                 try:
-                    gpio_file = open(Fan_green_led_gpio_path +"/value", 'w')
+                    gpio_file = open(Fan_green_led_gpio_path +"/brightness", 'w')
                     gpio_file.write(str(value))
                     gpio_file.close()
                     fan_green = 0x1
@@ -83,7 +87,7 @@ class LedControl(LedControlBase):
                 if fan_green == 0x1:
                     value=0
                     try:
-                        gpio_file = open(Fan_green_led_gpio_path +"/value", 'w')
+                        gpio_file = open(Fan_green_led_gpio_path +"/brightness", 'w')
                         gpio_file.write(str(value))
                         gpio_file.close()
                         fan_green = 0x0
@@ -92,7 +96,7 @@ class LedControl(LedControlBase):
                     
                 value=1
                 try:
-                    gpio_file = open(Fan_amber_led_gpio_path +"/value", 'w')
+                    gpio_file = open(Fan_amber_led_gpio_path +"/brightness", 'w')
                     gpio_file.write(str(value))
                     gpio_file.close()
                     fan_amper = 0x1
@@ -105,7 +109,7 @@ class LedControl(LedControlBase):
                 if psu_amber == 0x1:
                     value=0
                     try:
-                        gpio_file = open(Psu_amber_led_gpio_path +"/value", 'w')
+                        gpio_file = open(Psu_amber_led_gpio_path +"/brightness", 'w')
                         gpio_file.write(str(value))
                         gpio_file.close()
                         psu_amber = 0x0
@@ -113,7 +117,7 @@ class LedControl(LedControlBase):
                         print "error: unable to open gpio psuLedAmber: %s" % str(e)
                 value=1
                 try:
-                    gpio_file = open(Psu_green_led_gpio_path +"/value", 'w')
+                    gpio_file = open(Psu_green_led_gpio_path +"/brightness", 'w')
                     gpio_file.write(str(value))
                     gpio_file.close()
                     psu_green = 0x1
@@ -123,7 +127,7 @@ class LedControl(LedControlBase):
                 if  psu_green == 0x1:
                     value=0
                     try:
-                        gpio_file = open(Psu_green_led_gpio_path +"/value", 'w')
+                        gpio_file = open(Psu_green_led_gpio_path +"/brightness", 'w')
                         gpio_file.write(str(value))
                         gpio_file.close()
                         psu_green = 0x0
@@ -131,13 +135,62 @@ class LedControl(LedControlBase):
                         print "error: unable to open gpio psuLedGreen: %s" % str(e)
                 value=1
                 try:
-                    gpio_file = open(Psu_amber_led_gpio_path +"/value", 'w')
+                    gpio_file = open(Psu_amber_led_gpio_path +"/brightness", 'w')
                     gpio_file.write(str(value))
                     gpio_file.close()
                     psu_amber = 0x1
                 except IOError as e:
                     print "error: unable to open gpio psuLedAmber: %s" % str(e)
 
+          #  system led status 
+            if (fan_green == psu_green == True ) :
+                if sys_amber == 0x1:
+                    value=0
+                try:
+                    gpio_file = open(System_amber_led_gpio_path +"/brightness", 'w')
+                    gpio_file.write(str(value))
+                    gpio_file.close()
+                    sys_amber = 0x0
+                except IOError as e:
+                    print "error: unable to open gpio sysLedAmber: %s" % str(e)
+
+                if sys_green == 0x0:
+                    value=1
+                try:
+                    gpio_file = open(System_green_led_gpio_path +"/brightness", 'w')
+                    gpio_file.write(str(value))
+                    gpio_file.close()
+                    sys_green = 0x1
+                except IOError as e:
+                    print "error: unable to open gpio sysLedGreen: %s" % str(e)
+
+            else :
+                if sys_green == 0x1:
+                    value=0
+                try:
+                    gpio_file = open(System_green_led_gpio_path +"/brightness", 'w')
+                    gpio_file.write(str(value))
+                    gpio_file.close()
+                    sys_green = 0x0
+                except IOError as e:
+                    print "error: unable to open gpio sysLedGreen: %s" % str(e)
+                
+                if sys_amber == 0x0:
+                    value=1
+                try:
+                    gpio_file = open(System_amber_led_gpio_path +"/brightness", 'w')
+                    gpio_file.write(str(value))
+                    gpio_file.close()
+                    sys_amber = 0x1
+                except IOError as e:
+                    print "error: unable to open gpio sysLedAmber: %s" % str(e)
+
+
+            time.sleep(6)
+
+   # Helper method to map SONiC port name to index
+    def _port_name_to_index(self, port_name):
+        # Strip "Ethernet" off port name
             time.sleep(6)
 
    # Helper method to map SONiC port name to index

@@ -53,11 +53,11 @@ class SfpUtil(SfpUtilBase):
             bus.write_byte_data(DEVICE_ADDRESS, DEVICEREG, OPTIC_E)
 
         # Mux Ordering
-        mux_dev = sorted(glob.glob("/sys/class/i2c-adapter/i2c-0/i2c-[0-9]"))
+        mux_dev = sorted(glob.glob("/sys/class/i2c-adapter/i2c-1/i2c-[0-9]"))
 
         # Enable optoe2 Driver
-        eeprom_path = "/sys/class/i2c-adapter/i2c-{0}/{0}-0050/eeprom"
-        bus_path = "/sys/class/i2c-adapter/i2c-{0}/"
+        eeprom_path = "/sys/class/i2c-adapter/i2c-{1}/{1}-0050/eeprom"
+        bus_path = "/sys/class/i2c-adapter/i2c-{1}/"
         y = 0
         for x in range(self.port_start, self.port_end + 1):
             mux_dev_num = mux_dev[y]
@@ -77,7 +77,7 @@ class SfpUtil(SfpUtilBase):
         if port_num < self._port_start or port_num > self._port_end:
             return False
 
-        path = "/sys/class/i2c-adapter/i2c-{0}/{0}-0050/sfp_port_reset"
+        path = "/sys/class/i2c-adapter/i2c-{1}/{1}-0050/sfp_port_reset"
         port_ps = path.format(self.port_to_i2c_mapping[port_num])
 
         try:
