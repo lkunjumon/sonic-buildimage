@@ -1,14 +1,14 @@
 {   
     "thermal_control_algorithm": {
         "run_at_boot_up": "false",
-        "fan_speed_when_suspend": "35"
+        "fan_speed_when_suspend": "50"
     },
     "info_types": [
         {
             "type": "fan_info"
         },
         {
-            "type": "psu_info"
+            "type": "thermal_info"
         },
         {
             "type": "chassis_info"
@@ -34,37 +34,30 @@
             ]
         },
         {
-            "name": "any psu absence",
-            "conditions": [
-                {
-                    "type": "psu.any.absence"
-                }
-            ],
-            "actions": [
-                {
-                    "type": "thermal_control.control",
-                    "status": "false"
-                },
-                {
-                    "type": "fan.all.set_speed",
-                    "speed": "30"
-                }
-            ]
-        },
-        {
-            "name": "all fan and psu presence",
+            "name": "all fan presence",
             "conditions": [
                 {
                     "type": "fan.all.presence"
-                },
-                {
-                    "type": "psu.all.presence"
                 }
             ],
             "actions": [
                 {
-                    "type": "fan.all.set_speed",
-                    "speed": "30"
+                    "type": "thermal.temp_check_and_set_all_fan_speed",
+                    "default_speed": "50",
+                    "hightemp_speed": "100"
+                }
+            ]
+        },
+	{
+            "name": "temp over high critical threshold",
+            "conditions": [
+                {
+                    "type": "thermal.over.high_critical_threshold"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "switch.shutdown"
                 }
             ]
         }

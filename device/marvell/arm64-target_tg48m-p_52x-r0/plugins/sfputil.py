@@ -43,11 +43,11 @@ class SfpUtil(SfpUtilBase):
 
         # Enable optical SFP Tx
         if smbus_present == 0 :
-            os.system("i2cset -y -m 0x0f 0 0x41 0x5 0x00")
+            os.system("i2cset -y -m 0x0f 0 0x41 0x31 0x00")
         else :
             bus = smbus.SMBus(0)
             DEVICE_ADDRESS = 0x41
-            DEVICEREG = 0x5
+            DEVICEREG = 0x31
             OPTIC_E =  bus.read_byte_data(DEVICE_ADDRESS, DEVICEREG)
             OPTIC_E = OPTIC_E & 0xf0
             bus.write_byte_data(DEVICE_ADDRESS, DEVICEREG, OPTIC_E)
@@ -113,12 +113,12 @@ class SfpUtil(SfpUtilBase):
         pos = [1,2,4,8]
         bit_pos = pos[prt]
         if smbus_present == 0:
-             cmdstatus, sfpstatus = cmd.getstatusoutput('i2cget -y 0 0x41 0x3') #need to verify the cpld register logic
+             cmdstatus, sfpstatus = cmd.getstatusoutput('i2cget -y 0 0x41 0x3A') #need to verify the cpld register logic
              sfpstatus = int(sfpstatus, 16)
         else :
              bus = smbus.SMBus(0)
              DEVICE_ADDRESS = 0x41
-             DEVICE_REG = 0x3
+             DEVICE_REG = 0x3A
              sfpstatus = bus.read_byte_data(DEVICE_ADDRESS, DEVICE_REG)
         sfpstatus = sfpstatus&(bit_pos)
         if sfpstatus == 0:

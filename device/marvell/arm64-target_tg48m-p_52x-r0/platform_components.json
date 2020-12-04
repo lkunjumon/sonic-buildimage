@@ -1,0 +1,10 @@
+{
+    "chassis": {
+        "TG48M-P": {
+            "component": {
+                "U-Boot": { },
+                "System-CPLD": { }
+            }
+        }
+    }
+}

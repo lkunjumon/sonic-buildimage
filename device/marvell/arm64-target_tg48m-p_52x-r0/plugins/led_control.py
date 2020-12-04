@@ -6,26 +6,22 @@
 #
 try:
     from sonic_led.led_control_base import LedControlBase
-    import swsssdk
-    import threading
     import os
-    import logging
-    import struct
     import time
-    from socket import *
-    from select import *
     import sonic_platform.platform
     import sonic_platform.chassis
-except ImportError, e:
+except ImportError as e:
     raise ImportError(str(e) + " - required module not found")
+
 smbus_present = 1
 try:
     import smbus
-except ImportError, e:
+except ImportError as e:
     smbus_present = 0
 
 class LedControl(LedControlBase):
     """Platform specific LED control class"""
+
     # Constructor
     def __init__(self):
         self.chassis = sonic_platform.platform.Platform().get_chassis()
@@ -39,165 +35,66 @@ class LedControl(LedControlBase):
 
     def _initSystemLed(self):
         # Front Panel System LEDs setting
-        fan_green=0x0
-        fan_amber=0x0
-        psu_green=0x0
-        psu_amber=0x0
-        sys_green=0x0
-        sys_amber=0x0
-        Fan_green_led_gpio_path = "/sys/class/leds/fanLedGreen"
-        Fan_amber_led_gpio_path = "/sys/class/leds/fanLedAmber"
-        Psu_green_led_gpio_path = "/sys/class/leds/psuLedGreen"
-        Psu_amber_led_gpio_path = "/sys/class/leds/psuLedAmber"
-        System_green_led_gpio_path = "/sys/class/leds/sysLedGreen"
-        System_amber_led_gpio_path = "/sys/class/leds/sysLedAmber"
+        fan_led=0x0
+        psu_led=0x0
+        sys_led=0x0
 
-        # Write sys led
-        if smbus_present == 0:
-            print " PMON LED SET ERROR ->  smbus present = 0  "
+    def gpio_led_write(self,gpio_led_path, value):
+        try:
+            gpio_file = open(gpio_pin_path + "/brightness", 'w')
+            gpio_file.write(str(value))
+            gpio_file.close
+        except IOError as e:
+            print "error: unable to open gpio file: %s" % str(e)
+
+    while True:
+            
+        # Front Panel FAN LED
+        if ( self.chassis.get_fan(0).get_status() == self.chassis.get_fan(1).get_status() == self.chassis.get_fan(2).get_status() == True ):
+            if ( fan_led != 0x1 )
+                gpio_led_write("/sys/class/leds/fanLedGreen",1)
+                gpio_led_write("/sys/class/leds/fanLedAmber",0)
+                set_fan_led = 0x1
         else:
-            bus = smbus.SMBus(0)
-            DEVICE_ADDRESS = 0x41
-            DEVICEREG = 0x7
-            bus.write_byte_data(DEVICE_ADDRESS, DEVICEREG, 0x02)
+            if ( fan_led != 0x0 )
+                gpio_led_write("/sys/class/leds/fanLedAmber",1)
+                gpio_led_write("/sys/class/leds/fanLedGreen",0)
+                set_fan_led = 0x0
 
-        while True:
-            
-            # Front Panel FAN Panel LED setting in register 0x08
-            if ( self.chassis.get_fan(0).get_status() == self.chassis.get_fan(1).get_status()  == True ):
-                if fan_amber == 0x1:
-                    value=0
-                    try:
-                        gpio_file = open(Fan_amber_led_gpio_path +"/brightness", 'w')
-                        gpio_file.write(str(value))
-                        gpio_file.close()
-                        fan_amber = 0x0
-                    except IOError as e:
-                        print "error: unable to open gpio fanLedAmper: %s" % str(e)
 
-                value=1
-                try:
-                    gpio_file = open(Fan_green_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    fan_green = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio fanLedGreen: %s" % str(e)
-            else:
-                if fan_green == 0x1:
-                    value=0
-                    try:
-                        gpio_file = open(Fan_green_led_gpio_path +"/brightness", 'w')
-                        gpio_file.write(str(value))
-                        gpio_file.close()
-                        fan_green = 0x0
-                    except IOError as e:
-                        print "error: unable to open gpio fanLedGreen: %s" % str(e)
-                    
-                value=1
-                try:
-                    gpio_file = open(Fan_amber_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    fan_amper = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio fanLedAmper: %s" % str(e)
-            
-            
-            # Front Panel PSU Panel LED setting in register 0x09
-            if ( self.chassis.get_psu(0).get_status() == self.chassis.get_psu(1).get_status() == True ):
-                if psu_amber == 0x1:
-                    value=0
-                    try:
-                        gpio_file = open(Psu_amber_led_gpio_path +"/brightness", 'w')
-                        gpio_file.write(str(value))
-                        gpio_file.close()
-                        psu_amber = 0x0
-                    except IOError as e:
-                        print "error: unable to open gpio psuLedAmber: %s" % str(e)
-                value=1
-                try:
-                    gpio_file = open(Psu_green_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    psu_green = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio psuLedGreen: %s" % str(e)
-            else:
-                if  psu_green == 0x1:
-                    value=0
-                    try:
-                        gpio_file = open(Psu_green_led_gpio_path +"/brightness", 'w')
-                        gpio_file.write(str(value))
-                        gpio_file.close()
-                        psu_green = 0x0
-                    except IOError as e:
-                        print "error: unable to open gpio psuLedGreen: %s" % str(e)
-                value=1
-                try:
-                    gpio_file = open(Psu_amber_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    psu_amber = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio psuLedAmber: %s" % str(e)
+        # Front Panel PSU LED
+        if ( self.chassis.get_psu(0).get_status() == self.chassis.get_psu(1).get_status() == True ):
+            if ( psu_led != 0x1 )
+                gpio_led_write("/sys/class/leds/psuLedGreen",1)
+                gpio_led_write("/sys/class/leds/psuLedAmber",0)
+                psu_led = 0x1
+        else:
+            if ( psu_led != 0x0 )
+                gpio_led_write("/sys/class/leds/psuLedAmber",1)
+                gpio_led_write("/sys/class/leds/psuLedGreen",0)
+                psu_led = 0x0
 
-          #  system led status 
-            if (fan_green == psu_green == True ) :
-                if sys_amber == 0x1:
-                    value=0
-                try:
-                    gpio_file = open(System_amber_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    sys_amber = 0x0
-                except IOError as e:
-                    print "error: unable to open gpio sysLedAmber: %s" % str(e)
 
-                if sys_green == 0x0:
-                    value=1
-                try:
-                    gpio_file = open(System_green_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    sys_green = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio sysLedGreen: %s" % str(e)
-
-            else :
-                if sys_green == 0x1:
-                    value=0
-                try:
-                    gpio_file = open(System_green_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    sys_green = 0x0
-                except IOError as e:
-                    print "error: unable to open gpio sysLedGreen: %s" % str(e)
-                
-                if sys_amber == 0x0:
-                    value=1
-                try:
-                    gpio_file = open(System_amber_led_gpio_path +"/brightness", 'w')
-                    gpio_file.write(str(value))
-                    gpio_file.close()
-                    sys_amber = 0x1
-                except IOError as e:
-                    print "error: unable to open gpio sysLedAmber: %s" % str(e)
-
+        # Front Panel system LED
+        if ( fan_led == psu_led == 0x1 ) :
+            if ( sys_led != 0x1 )
+                gpio_led_write("/sys/class/leds/sysLedGreen",1)
+                gpio_led_write("/sys/class/leds/sysLedAmber",0)
+                sys_led = 0x1
+        else:
+            if ( sys_led != 0x0 )
+                gpio_led_write("/sys/class/leds/sysLedAmber",1)
+                gpio_led_write("/sys/class/leds/sysLedGreen",0)
+                sys_led = 0x0
 
             time.sleep(6)
 
-   # Helper method to map SONiC port name to index
-    def _port_name_to_index(self, port_name):
-        # Strip "Ethernet" off port name
-            time.sleep(6)
-
-   # Helper method to map SONiC port name to index
+    # Helper method to map SONiC port name to index
     def _port_name_to_index(self, port_name):
         # Strip "Ethernet" off port name
         if not port_name.startswith(self.SONIC_PORT_NAME_PREFIX):
             return -1
+
         port_idx = int(port_name[len(self.SONIC_PORT_NAME_PREFIX):])
         return port_idx
 
